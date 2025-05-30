@@ -1,7 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 
 const loginSchema = z.object({
   email: z
@@ -33,6 +37,7 @@ const loginSchema = z.object({
 });
 
 const LoginForm = () => {
+  const router = useRouter();
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -41,9 +46,23 @@ const LoginForm = () => {
     },
   });
 
-  function onSubmit(data: z.infer<typeof loginSchema>) {
-    console.log("Form submitted:", data);
-    // Aqui você pode adicionar a lógica para enviar os dados do formulário
+  async function onSubmit(data: z.infer<typeof loginSchema>) {
+    await authClient.signIn.email(
+      {
+        email: data.email,
+        password: data.password,
+      },
+      {
+        onSuccess: () => {
+          // Redirecionar para a página de dashboard após o login bem-sucedido
+          router.push("/dashboard");
+        },
+        onError: () => {
+          // Exibir mensagem de erro se o login falhar
+          toast.error("Erro ao fazer login. Verifique suas credenciais.");
+        },
+      },
+    );
   }
 
   return (
@@ -78,7 +97,7 @@ const LoginForm = () => {
                 <FormItem>
                   <FormLabel>Senha</FormLabel>
                   <FormControl>
-                    <Input placeholder="shadcn" {...field} />
+                    <Input placeholder="shadcn" {...field} type="password" />
                   </FormControl>
 
                   <FormMessage />
@@ -87,8 +106,16 @@ const LoginForm = () => {
             />
           </CardContent>
           <CardFooter>
-            <Button className="w-full" type="submit">
-              Login
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={loginForm.formState.isSubmitting}
+            >
+              {loginForm.formState.isSubmitting ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                "Login"
+              )}
             </Button>
           </CardFooter>
         </form>

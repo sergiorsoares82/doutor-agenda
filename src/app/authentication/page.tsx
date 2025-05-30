@@ -1,9 +1,7 @@
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -31,9 +29,6 @@ const AuthenticationPage = () => {
             <CardContent className="space-y-2">
               <LoginForm />
             </CardContent>
-            <CardFooter>
-              <Button>Save changes</Button>
-            </CardFooter>
           </Card>
         </TabsContent>
         <TabsContent value="register">
