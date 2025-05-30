@@ -1,6 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -22,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 
 const registerSchema = z.object({
   name: z.string().trim().min(1, "Nome é obrigatório"),
@@ -34,6 +37,7 @@ const registerSchema = z.object({
 });
 
 const SignupForm = () => {
+  const router = useRouter();
   const registerForm = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -43,9 +47,20 @@ const SignupForm = () => {
     },
   });
 
-  function onSubmit(data: z.infer<typeof registerSchema>) {
-    console.log("Form submitted:", data);
-    // Aqui você pode adicionar a lógica para enviar os dados do formulário
+  async function onSubmit(data: z.infer<typeof registerSchema>) {
+    await authClient.signUp.email(
+      {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        callbackURL: "/dashboard",
+      },
+      {
+        onSuccess: () => {
+          router.push("/dashboard");
+        },
+      },
+    );
   }
 
   return (
@@ -97,7 +112,7 @@ const SignupForm = () => {
                 <FormItem>
                   <FormLabel>Senha</FormLabel>
                   <FormControl>
-                    <Input placeholder="shadcn" {...field} />
+                    <Input placeholder="shadcn" {...field} type="password" />
                   </FormControl>
 
                   <FormMessage />
@@ -106,7 +121,16 @@ const SignupForm = () => {
             />
           </CardContent>
           <CardFooter>
-            <Button className="w-full" type="submit">
+            <Button
+              className="w-full"
+              type="submit"
+              disabled={registerForm.formState.isSubmitting}
+            >
+              {registerForm.formState.isSubmitting ? (
+                <Loader2 className="mr-2 h-4 animate-spin" />
+              ) : (
+                "Criar Conta"
+              )}
               Criar conta
             </Button>
           </CardFooter>
