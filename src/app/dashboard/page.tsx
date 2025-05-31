@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
@@ -29,6 +30,12 @@ const DashboardPage = async () => {
       <h1>Dashboard</h1>
       <h1>{session?.user?.name}</h1>
       <h1>{session?.user?.email}</h1>
+      <Image
+        src={session?.user?.image as string}
+        alt="User Image"
+        width={100}
+        height={100}
+      />
       <SignOutButton />
     </div>
   );
